@@ -1,0 +1,10 @@
+---
+# handlers file for role1
+- name: restart nginx server
+  service: 
+    name: nginx
+    state: restarted
+- name: restart apache server
+  service: 
+    name: httpd
+    state: restarted  

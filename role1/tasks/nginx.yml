@@ -1,0 +1,16 @@
+- name: ensure nginx is at the latest version
+  yum: name=nginx state=present
+  become: yes
+  #- name: start nginx
+  #service:
+  #  name: nginx
+  #  state: started
+  #  enabled: yes
+  #  become: yes
+- name: Start Nginx Service
+  shell: service nginx start
+- name: copy index file
+  copy:
+    src: index.html
+    dest: /var/www/html  
+    notify: restart nginx server

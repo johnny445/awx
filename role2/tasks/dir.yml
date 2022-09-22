@@ -1,0 +1,14 @@
+- name: this will create my_dirs
+  command: mkdir /opt/"{{ item }}"
+  with_items:
+  - new_dir1
+  - new_dir2
+  - new_dir3
+- name: copy files form src to dest
+  copy:
+    src: "{{ item }}"
+    dest: /root/
+##  loop:
+   with_items:
+      - nginx.yaml
+      - tomcat.yml    

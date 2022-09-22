@@ -1,0 +1,14 @@
+- name: install apache
+  yum:
+    name: httpd
+    state: latest
+- name: port change
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^Listen '
+    insertafter: '^#Listen '
+    line: 'Listen 8080'    
+- name: start service
+  service:
+    name: httpd
+    state: started

@@ -1,5 +1,5 @@
 - name: ensure nginx is at the latest version
-  yum: name=nginx state=present
+  apt: name=nginx state=present
   become: yes
   #- name: start nginx
   #service:

@@ -1,6 +1,6 @@
 - name: install apache
-  yum:
-    name: httpd
+  apt:
+    name: apache2
     state: latest
 - name: port change
   lineinfile:
@@ -10,5 +10,5 @@
     line: 'Listen 8080'    
 - name: start service
   service:
-    name: httpd
+    name: apache2
     state: started

@@ -1,0 +1,98 @@
+---
+- hosts: all
+  become: yes
+  #  ignore_error: yes
+  tasks:
+    - name: install java
+      apt:
+        name: openjdk-8-jdk
+        state: present
+      tags: java       
+    - name: change the defaults in etc file
+      lineinfile:
+        path: /etc/sysctl.conf  
+        state: present
+        line: 'vm.max_map_count = 262144'
+      tags: vmcount
+    - name: start sysctl service
+      shell: sysctl -p
+      tags: sysctl
+    - name: Download opensearch tar file
+      get_url:
+        url: https://artifacts.opensearch.org/releases/bundle/opensearch/2.2.1/opensearch-2.2.1-linux-x64.tar.gz
+        dest: /opt
+        mode: '0660'
+      tags: tar_opensearch      
+    - name: unarchive_the_tar
+      unarchive:
+        src: /opt/opensearch-2.2.1-linux-x64.tar.gz
+        dest: /opt
+        remote_src: yes
+    - name: add contect to file
+      blockinfile:
+        path: /opt/opensearch-2.2.1/config/opensearch.yml
+        block: | 
+                cluster.name: my-application
+                node.name: node
+                network.host: 172.31.45.213
+                http.port: 9200
+                transport.tcp.port: 9300
+                discovery.seed_hosts: ["172.31.45.213"]
+                cluster.initial_cluster_manager_nodes: ["172.31.45.213"]
+      tags: opensearchadd        
+      # - name: opensearchsecuritysstart
+      #become_user: ubuntu
+      #command: chdir=/opt/opensearch-2.2.1/ ./opensearch-tar-install.sh
+      #tags: opensecurity
+    - name: Creating an empty file
+      file:
+        path: "/etc/systemd/system/opensearchsecurity.service"
+        state: touch
+        mode: '0755'
+    - name: add opensearch service
+      blockinfile:
+        path: /etc/systemd/system/opensearchsecurity.service
+        block: |
+                 [Unit]
+                 Description=This is opensearch service
+                 [Service]
+                 User=ubuntu
+                 WorkingDirectory=/opt/opensearch-2.2.1/
+                 ExecStart=/opt/opensearch-2.2.1/opensearch-tar-install.sh
+                 Restart=always
+                 [Install]
+                 WantedBy=multi-user.target
+    - name: start opensearchsecurity.service
+      systemd:
+        name: opensearchsecurity.service
+        state: started
+        daemon_reload: yes
+        enabled: yes
+#    - name: opensearchservice
+ #     become_user: ubuntu
+  #    command: chdir=/opt/opensearch-2.2.1/bin/ ./opensearch
+   #   tags: openservice
+    - name: Creating an empty file
+      file:
+        path: "/etc/systemd/system/opensearchserver.service"
+        state: touch
+        mode: '0755'
+    - name: add opensearch server
+      blockinfile:
+        path: /etc/systemd/system/opensearchserver.service
+        block: |
+                 [Unit]
+                 Description=This is opensearch server
+                 [Service]
+                 User=ubuntu
+                 WorkingDirectory=/opt/opensearch-2.2.1/
+                 ExecStart=/opt/opensearch-2.2.1/bin/opensearch
+                 Restart=always
+                 [Install]
+                 WantedBy=multi-user.target
+    - name: start opensearchserver.service
+      systemd:
+        name: opensearchserver.service
+        state: started
+        daemon_reload: yes
+        enabled: yes
